@@ -15,14 +15,14 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
     <PackageReference Include="Npgsql" Version="8.0.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extension.Configuration" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extension.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-  <None Update="appsetting.json">
+  <None Update="appsettings.json">
   <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  <None>
+  </None>
   </ItemGroup>
 
 </Project>

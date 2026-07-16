@@ -10,7 +10,7 @@ namespace EcommerceTests.Helpers
 
         public DatabaseHelper(string host, int port, string database, string username, string password)
         {
-            _connectionString = $"Host ={host};Port={port};Database={database};Username={username};Password={password}";
+            _connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
         }
 
         public void Connect()
@@ -21,7 +21,7 @@ namespace EcommerceTests.Helpers
 
         public void Disconnect()
         {
-            if (_connection != null && _connection.Status == ConnectionState.Open)
+            if (_connection != null && _connection.State == ConnectionState.Open)
             {
                 _connection.Close();
                 _connection.Dispose();
@@ -31,7 +31,7 @@ namespace EcommerceTests.Helpers
         public Order GetOrderById(string orderId)
         {
             using var cmd = new NpgsqlCommand(
-                "SELECT order_id, customer_email, original_amount,discount_amount, final_amount, promotion_code, ststus,created_at FROM orders WHERE order_id = @orderId",_connection);
+                "SELECT order_id, customer_email, original_amount,discount_amount, final_amount, promotion_code, status,created_at FROM orders WHERE order_id = @orderId",_connection);
                 cmd.Parameters.AddWithValue("orderId", orderId);
 
                 using var reader = cmd.ExecuteReader();
@@ -41,7 +41,7 @@ namespace EcommerceTests.Helpers
                     {
                         OrderId = reader.GetString(0),
                         CustomerEmail = reader.GetString(1),
-                        OriginalAccount = reader.GetDecimal(2),
+                        OriginalAmount = reader.GetDecimal(2),
                         DiscountAmount = reader.GetDecimal(3),
                         FinalAmount = reader.GetDecimal(4),
                         PromotionCode = reader.IsDBNull(5) ? null : reader.GetString(5),
@@ -59,7 +59,7 @@ namespace EcommerceTests.Helpers
         public AuditLog GetAuditLogByOrderId(string orderId)
         {
             using var cmd = new NpgsqlCommand(
-                "SELECT audit_id, promotion_id, order_id,discount_applied, used_at Frompromotion_audit_log WHERE order_id = @orderId",_connection
+                "SELECT audit_id, promotion_id, order_id,discount_applied, used_at FROM promotion_audit_log WHERE order_id = @orderId",_connection
             );
             cmd.Parameters.AddWithValue("orderId", orderId);
 

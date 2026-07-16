@@ -76,7 +76,7 @@ namespace EcommerceTests.PageObjects
                 Timeout = 10000
             });
 
-            var orderNumberText = Await OrderNumber.TextContentAsync();
+            var orderNumberText = await OrderNumber.TextContentAsync();
             return orderNumberText?.Trim();
         }
 
@@ -100,7 +100,7 @@ namespace EcommerceTests.PageObjects
         public async Task<string> GetErrorMessageAsync()
         {
             var text = await ErrorMessage.TextContentAsync();
-            return text?.trim();
+            return text?.Trim();
         }
 
         private decimal ParsePrice(string priceText)

@@ -18,7 +18,7 @@ namespace EcommerceTests.Helpers
 
             if (!string.IsNullOrEmpty(apiKey))
             {
-                _httpClient.DefaultRequestHeaders.Add("Aothorization", $"Bearer {apiKey}");
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
             }
 
         }
@@ -28,7 +28,7 @@ namespace EcommerceTests.Helpers
             var json = JsonSerializer.Serialize(promotionData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("/admin/promotion", content);
+            var response = await _httpClient.PostAsync("/admin/promotions", content);
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsStringAsync();

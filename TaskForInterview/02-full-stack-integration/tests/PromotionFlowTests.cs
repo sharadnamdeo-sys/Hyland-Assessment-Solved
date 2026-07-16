@@ -25,7 +25,7 @@ namespace EcommerceTests.Integration
             {
                 _config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsetting.json")
+                .AddJsonFile("appsettings.json")
                 .Build();
 
                 var apiBaseUrl = _config["TestConfiguration:Api:BaseUrl"];
@@ -69,7 +69,7 @@ namespace EcommerceTests.Integration
             }
 
             _dbHelper?.Disconnect();
-            await _resetClient.PortAsync("/admin/reset", null)
+            await _resetClient.PostAsync("/admin/reset", null);
 
 
         }
@@ -77,7 +77,7 @@ namespace EcommerceTests.Integration
         [Test]
         public async Task TestFullPromotionFlowHappyPath()
         {
-            var validForm = DateTime.UtcNow.AddDays(-1);
+            var validFrom = DateTime.UtcNow.AddDays(-1);
             var validUntil = DateTime.UtcNow.AddDays(30);
 
             var promotionData = new 
@@ -87,45 +87,45 @@ namespace EcommerceTests.Integration
                 discountValue = 25,
                 category = "ELECTRONICS",
                 maxUses = 100,
-                validForm = validForm.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                validFrom = validFrom.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 validUntil = validUntil.ToString("yyyy-MM-ddTHH:mm:ssZ")
 
 
             };
 
             var promoResponse = await _apiClient.CreatePromotionAsync(promotionData);
-            _testPromotionId = promoResponse._testPromotionId;
+            _testPromotionId = promoResponse.PromotionId;
 
-            Assert.IsNotNull(promoResponse._testPromotionId);
-            Assert.AreEqual("SPRONG25" , promoResponse.Code);
+            Assert.IsNotNull(promoResponse.PromotionId);
+            Assert.AreEqual("SPRING25" , promoResponse.Code);
             Assert.AreEqual("ACTIVE", promoResponse.Status);
 
-            var checkoutPage = new checkoutPage(Page);
+            var checkoutPage = new CheckoutPage(Page);
             await checkoutPage.NavigateAsync();
 
-            vat originalPrice = await checkoutPage.GetOriginalPriceAsync();
-            Assert.AreEqual(10000.00mm, originalPrice);
+            var originalPrice = await checkoutPage.GetOriginalPriceAsync();
+            Assert.AreEqual(1000.00m, originalPrice);
 
             await checkoutPage.ApplyPromoCodeAsync("SPRING25");
-            await checkoutPage.VerifyDiscountApplied(250.00mm);
+            await checkoutPage.VerifyDiscountApplied(250.00m);
 
             var discountAmount = await checkoutPage.GetDiscountAmountAsync();
-            var finalPrice = await checkoutPage.GetFibalPriceAsync();
+            var finalPrice = await checkoutPage.GetFinalPriceAsync();
 
             Assert.AreEqual(250.00m,discountAmount);
             Assert.AreEqual(750.00m,finalPrice);
 
-            var orderID = await checkoutPage.PlaceOrderAsync();
-            _lastOrderId = orderID;
+            var orderId = await checkoutPage.PlaceOrderAsync();
+            _lastOrderId = orderId;
 
-            Assert.IsNotNull(orderID);
-            Assert.IsTrue(orderID.StartsWith("ORD-"));
+            Assert.IsNotNull(orderId);
+            Assert.IsTrue(orderId.StartsWith("ORD-"));
 
             await Task.Delay(1000);
             var order = _dbHelper.GetOrderById(orderId);
             Assert.IsNotNull(order);
             Assert.AreEqual(1000.00m,order.OriginalAmount);
-            Assert.AreEqual(250.00m, order.discountAmount);
+            Assert.AreEqual(250.00m, order.DiscountAmount);
             Assert.AreEqual(750.00m, order.FinalAmount);
             Assert.AreEqual("SPRING25",order.PromotionCode);
             Assert.AreEqual("COMPLETED",order.Status);
@@ -161,7 +161,7 @@ namespace EcommerceTests.Integration
         [Test]
         public async Task TestExpiredPromoCode()
         {
-            var validForm = DateTime.UtcNow.AddDays(-30);
+            var validFrom = DateTime.UtcNow.AddDays(-30);
             var validUntil = DateTime.UtcNow.AddDays(-1);
             var promotionData = new 
             {
@@ -170,7 +170,7 @@ namespace EcommerceTests.Integration
                 discountValue = 20,
                 category = "ELECTRONICS",
                 maxUses = 100,
-                validForm = validForm.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                validFrom = validFrom.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 validUntil = validUntil.ToString("yyyy-MM-ddTHH:mm:ssZ")
 
             };
@@ -196,7 +196,7 @@ namespace EcommerceTests.Integration
         [Test]
         public async Task TestWrongCategoryPromo()
         {
-            var validForm = DateTime.UtcNow.AddDays(-1);
+            var validFrom = DateTime.UtcNow.AddDays(-1);
             var validUntil = DateTime.UtcNow.AddDays(30);
 
             var promotionData = new 
@@ -206,7 +206,7 @@ namespace EcommerceTests.Integration
                 discountValue = 15,
                 category = "BOOKS",
                 maxUses = 100,
-                validForm = validForm.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                validFrom = validFrom.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 validUntil = validUntil.ToString("yyyy-MM-ddTHH:mm:ssZ")
             };
 
@@ -222,7 +222,7 @@ namespace EcommerceTests.Integration
             Assert.IsTrue(isErrorDisplayed);
 
             var errorMessage = await checkoutPage.GetErrorMessageAsync();
-            Assert.IsTrue(errorMessage.Contains("nbot valid for") || errorMessage.Contains("ELCETRONICS"));
+            Assert.IsTrue(errorMessage.Contains("not valid for") || errorMessage.Contains("ELECTRONICS"));
 
             var finalPrice = await checkoutPage.GetFinalPriceAsync();
             Assert.AreEqual(1000.00m, finalPrice);
