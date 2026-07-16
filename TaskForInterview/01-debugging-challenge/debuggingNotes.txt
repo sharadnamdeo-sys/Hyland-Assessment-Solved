@@ -1,0 +1,14 @@
+There are two errors :
+ 1. TIMEOUT on ".discount-applied"
+ (network-logs.json) POST /discount/validate took 2847ms
+ REAL BUG (backend/infra):
+ - Pricing service is degraded under load; response time (~3200ms)
+ exceeds the 3000ms budget.
+ - Service lacks retry/backoff and needs scaling / queue back-pressure.
+
+2. PRICE MISMATCH
+ Expected: 4999.0 * 0.8 = 3999.20
+ -#1851 returned 4000.0
+ -#1862 returned 3999.0
+ REAL BUG (backend): inconsistent server-side rounding.
+ STATUS: rounding logic now UPDATED to return 3999.20 consistently.
